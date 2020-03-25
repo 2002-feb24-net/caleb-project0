@@ -1,0 +1,12 @@
+C:\revature\caleb-project0\P0Library\bin\Debug\netcoreapp3.1\P0Library.deps.json
+C:\revature\caleb-project0\P0Library\bin\Debug\netcoreapp3.1\P0Library.dll
+C:\revature\caleb-project0\P0Library\obj\Debug\netcoreapp3.1\P0Library.csprojAssemblyReference.cache
+C:\revature\caleb-project0\P0Library\obj\Debug\netcoreapp3.1\P0Library.AssemblyInfoInputs.cache
+C:\revature\caleb-project0\P0Library\obj\Debug\netcoreapp3.1\P0Library.AssemblyInfo.cs
+C:\revature\caleb-project0\P0Library\bin\Debug\netcoreapp3.1\P0Library.runtimeconfig.json
+C:\revature\caleb-project0\P0Library\bin\Debug\netcoreapp3.1\P0Library.runtimeconfig.dev.json
+C:\revature\caleb-project0\P0Library\obj\Debug\netcoreapp3.1\P0Library.genruntimeconfig.cache
+C:\revature\caleb-project0\P0Library\bin\Debug\netcoreapp3.1\P0Library.pdb
+C:\revature\caleb-project0\P0Library\obj\Debug\netcoreapp3.1\P0Library.csproj.CoreCompileInputs.cache
+C:\revature\caleb-project0\P0Library\obj\Debug\netcoreapp3.1\P0Library.dll
+C:\revature\caleb-project0\P0Library\obj\Debug\netcoreapp3.1\P0Library.pdb
