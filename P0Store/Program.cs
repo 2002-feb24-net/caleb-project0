@@ -325,13 +325,12 @@ namespace P0Store
                     //formatted to display price in currency format
                     Console.WriteLine(product.Name + "  " + String.Format("{0:C}", product.Price));
                 }
+                Console.WriteLine();
             }
         }
         //make an order********************************************************************************************************
         public static void MakeOrder(int customerId)
         {
-            //making an order requires a login to ensure customer records
-            Login();
             using (var context = new Project0DbContext())
             {
                 bool storeexception;
@@ -456,45 +455,19 @@ namespace P0Store
                     //adds to count variable to ensure valid/unique new id
                     numOrdersToAdd++;
 
+                    //exception handling for inventory database update
                     try
                     {
-                        /************************             PLACE INVENTORY EVAL HERE ONCE FINISHED                 ******************************/
+                        //remove quantities of each item selected from given store
+                        //gets inventory object that matches currently selected store and product 1 and subtracts quantity from it
+                        var inventoryQuantity = context.Inventory.Where(s => s.StoreId == storeChoice && s.ProductId == orderSelect).Single();
+                        //subtracts quantity selected from Inventory objects quantity
+                        inventoryQuantity.Quantity -= quantity;
                     }
                     catch(Exception e)
                     {
                         Console.WriteLine(e.Message);
                     }
-                    //remove quantities of each item selected from given store
-                    //gets inventory / quantity of item that matches currently selected store and product 1 and subtracts quantity from it
-                    var inventoryQuantity = context.Inventory.First(s => s.StoreId == storeChoice && s.ProductId == orderSelect).Quantity - quantity;
-                    //    Console.WriteLine("THIS IS THE INVENTORY QUANTITY BEFORE: " + inventoryQuantity);
-                    //subtracts quantity selected from store inventory
-                    //    inventoryQuantity -= quantity;
-
-                    //    Console.WriteLine("THIS IS THE INVENTORY QUANTITY AFTER: " + inventoryQuantity + "\nTHIS IS THE QUANTITY: " + quantity);
-
-                    //commits update of new inventory
-                    /*               context.Inventory.Update(inventoryQuantity);****************************************************************************************/
-                    //MISSING UPDATE INVENTORY COMMIT BEFORE SUBMIT CHANGES
-
-                    /* UNABLE TO FIND UPDATE RANGE THE WEBSITE LIED TO ME
-                    //modifies existing inventory objects through InventoryList
-                    InventoryList.UpdateRange(new Inventory
-                    {
-                    });*/
-                    //remove quantities of each item selected from given store
-                    //gets inventory / quantity of item that matches currently selected store and product 1
-                    /*           var inventoryQuantity = context.Inventory.First(s => s.StoreId == storeChoice && s.ProductId == orderSelect).Quantity;
-                               Console.WriteLine("THIS IS THE INVENTORY QUANTITY BEFORE: " + inventoryQuantity);
-                               //subtracts quantity selected from store inventory
-                               inventoryQuantity -= quantity;
-                               Console.WriteLine("THIS IS THE INVENTORY QUANTITY AFTER: " + inventoryQuantity + "\nTHIS IS THE QUANTITY: " + quantity);        */
-                    // \/ This should be equivalent to updating / modifying database according to Nick's website \/
-                    /* NONE OF IT WORKS
-                    context.Inventory.Update(s => s.StoreId == storeChoice && s.ProductId == orderSelect).inventoryQuantity;
-                    context.Inventory.Update(s => s.StoreId == storeChoice && s.ProductId == orderSelect);
-                    context.Inventory.Update();
-                    */
 
                     bool validatedContinueOrderInput;
                     string continueOrderInput = "";
@@ -533,31 +506,6 @@ namespace P0Store
                 }
                 //save changes to database
                 context.SaveChanges();
-
-                /*
-                //PUTTING SAVECHANGES IN A SEPARATE WHILE LOOP CAUSES CONSOLE TO HANG - SAVECHANGES GOES THROUGH, BUT DOES NOT RETURN TO METHOD (NO ERRORS, NO CRASH)
-                //order submission confirmation
-                Console.WriteLine("Submit order? (y/n)");
-                //input confirm / deny
-                string confirmOrder = Console.ReadLine();
-                //checks user to confirm, loop ensures proper input to validate user input
-                while (confirmOrder != "y" || confirmOrder != "Y" || confirmOrder != "n" || confirmOrder != "N")
-                {
-                    if (confirmOrder == "y" || confirmOrder == "Y")
-                    {
-                        //save changes to database
-                        context.SaveChanges();
-                    }
-                    //prompts double check with user
-                    else if (confirmOrder == "n" || confirmOrder == "N")
-                    {
-                        Console.WriteLine("Very well, the order will be discarded");
-                    }
-                    else
-                    {
-                        Console.WriteLine("Invalid input, please try again.");
-                    }
-                }*/
             }
         }
         //search customers by name********************************************************************************************************
@@ -586,7 +534,7 @@ namespace P0Store
                         if (userfname != null)
                         {
                             //indicates that username is in the database
-                            Console.WriteLine($"That user is present in the database! {userfname} {userlname}'s username is {username}.");
+                            Console.WriteLine($"That user is present in the database! {userfname} {userlname}'s username is {username}.\n");
                             //do while handles input validation - ensures user input is either y/n
                             do
                             {
@@ -699,7 +647,7 @@ namespace P0Store
                 } while (valid == false);
             }
         }
-        //view order history of a customer*****************ADD NO ORDER HISTORY OPTION*****************AND CHOOSE BY NAME INSTEAD OF USERNAME*******************
+        //view order history of a customer*********************************************************************************************
         public static void CustomerOrderHistory()
         {
             using (var context = new Project0DbContext())
@@ -731,6 +679,13 @@ namespace P0Store
                         {
                             //throws custom exception to pull out of try before displaying writelines
                             throw new System.ArgumentException("Parameter cannot be less than or greater than number of listed customers", "customerChoice");
+                        }
+                        //gets number of orders of customer
+                        var custOrderCount = orderList.Count();
+                        //advises that there are no recorded orders for given customer if none found
+                        if(custOrderCount < 1)
+                        {
+                            Console.WriteLine("This customer doesn't have any orders yet.");
                         }
                         //using foreach instead of switch case to display order details by customer
                         foreach (var order in orderList)
@@ -967,7 +922,7 @@ namespace P0Store
                 }
             }
         }
-        //method to validate yes/no inputs (returns false if invalid)************************************************************************************
+        //method to validate yes/no inputs (returns false if invalid)*****************************************************************************
         public static bool ValidYN(string input)
         {
             if(input == "y" || input == "Y")
@@ -984,7 +939,7 @@ namespace P0Store
                 return false;
             }
         }
-        //method to validate strings (returns false if invalid)******************************************************************
+        //method to validate strings (returns validated string)******************************************************************
         public static string ValidateString(string input)
         {
             string validatedString;
