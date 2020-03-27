@@ -1,9 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "75PDKK8gu5a5fTt+5jfGGXMCAW/anvh5XcS70OtRI69wCmT+8xv2jL7KA2KJUMKDm76FL/BZEuZpxzNFx/k2bw==",
+  "dgSpecHash": "wKnf+VDq/R/N8oQPDQml9wN+ieI3ccujkI/5EpcqOSmO0I0u2y5vn1gvhSCCkaMuJoHOi9iLNOEmm/fk1yTapg==",
   "success": true,
   "projectFilePath": "C:\\revature\\caleb-project0\\P0Store\\P0Store.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\cjcro\\.nuget\\packages\\fluentvalidation\\8.6.2\\fluentvalidation.8.6.2.nupkg.sha512",
+    "C:\\Users\\cjcro\\.nuget\\packages\\fluentvalidation.aspnetcore\\8.6.2\\fluentvalidation.aspnetcore.8.6.2.nupkg.sha512",
+    "C:\\Users\\cjcro\\.nuget\\packages\\fluentvalidation.dependencyinjectionextensions\\8.6.2\\fluentvalidation.dependencyinjectionextensions.8.6.2.nupkg.sha512",
     "C:\\Users\\cjcro\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\1.1.0\\microsoft.bcl.asyncinterfaces.1.1.0.nupkg.sha512",
     "C:\\Users\\cjcro\\.nuget\\packages\\microsoft.bcl.hashcode\\1.1.0\\microsoft.bcl.hashcode.1.1.0.nupkg.sha512",
     "C:\\Users\\cjcro\\.nuget\\packages\\microsoft.csharp\\4.7.0\\microsoft.csharp.4.7.0.nupkg.sha512",

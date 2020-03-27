@@ -1,85 +1,79 @@
 ﻿using Microsoft.Data.SqlClient;
 using P0Library.Model;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace P0Store
 {
     class Program
     {
+        //***********BEGIN MAIN***********************
         static void Main(string[] args)
         {
+            //calls method to add tables if none already exist in the database
             DbSetup();
-            Console.WriteLine("Are you a returning customer? (y/n)");
-            string initResponse = Console.ReadLine();
-            //continues to repeat as long as input is not correct
-            //do
-            //{
+            //bool for input validation
+            bool valid;
+            //string for user inputs
+            string initResponse;
+            //initialization of cust id for swapping into makeorder from login and createaccount
             int custId = 1;
+
+            //do while is input validation that calls to the yes/no validation method
+            do
+            {
+                Console.WriteLine("Are you a returning customer? (y/n)");
+                initResponse = Console.ReadLine();
+                //checks that input is valid
+                valid = ValidYN(initResponse);
+            } while (valid != true);
+
+
+            //do while is input validation that calls to the yes/no validation method
+            do
+            {
+                //if cust says they are a returning customer
                 if (initResponse == "y" || initResponse == "Y")
                 {
-                //calls login method, login returns customer id for makeorder to put into new order item
-                custId = Login();
+                    //calls login method, login returns customer id for makeorder to put into new order item
+                    custId = Login();
                 }
+                //if cust says they are not a returning customer
                 else if (initResponse == "n" || initResponse == "N")
                 {
-                    Console.WriteLine("Would you like to create an account? (y/n)");
-                    initResponse = Console.ReadLine();
-                    if (initResponse == "y" || initResponse == "Y")
+                    do
                     {
-                        //calls create account method
-                        CreateAccount();
-                    }
-                    //will continue to CallMethods() / 'storepage' even w/o creating account, so no need to use else if initResponse == "n"
-                    else
-                    {
-                        Console.WriteLine("Invalid input. Please enter y/n");
-                    }
+                        Console.WriteLine("Would you like to create an account? (y/n)");
+                        initResponse = Console.ReadLine();
+                        //input validation
+                        valid = ValidYN(initResponse);
+                        if (initResponse == "y" || initResponse == "Y")
+                        {
+                            //calls create account method
+                            custId = CreateAccount();
+                        }
+                    } while (valid != true);
                 }
-                else
-                {
-                    Console.WriteLine("Invalid input. Please enter y/n");
-                }
-            //} while (initResponse != "y" || initResponse != "Y" || initResponse != "n" || initResponse != "N");
-            // *************  user is now on a 'store page'
-            bool repeat = true;
-            //while loop to repeat so long as input does not match correct options, calls all critical store methods
-            while (repeat == true)
-            {
-                CallMethods(custId);
-                //prompts user for another cycle
-                Console.WriteLine("Would you like to do something else? (y/n)");
-                try
-                {
-                    string repeatInput = Console.ReadLine();
-                    if (repeatInput == "y" || repeatInput == "Y")
-                    {
-                        repeat = true;
-                    }
-                    //user declines repeat cycle
-                    else if (repeatInput == "n" || repeatInput == "N")
-                    {
-                        repeat = false;
-                    }
-                }
-                catch (Exception)
-                {
-                    Console.WriteLine("Invalid input. Please enter y/n");
-                }
-            }
-            Console.WriteLine("Thank you for shopping!");
-            Console.ReadKey();
-            Environment.Exit(0);
-        }                                      //***********END MAIN***********************
+            } while (valid != true);
+
+            //puts customer into 'storepage' loop wherein they view all method call options until they opt to quit
+            CallMethods(custId);
+        }
+        //***********END MAIN***********************
+
         //************CALLS THE VARIOUS METHODS***********************************
         public static void CallMethods(int customerId)
         {
             Console.WriteLine("Would you like to: " +
                     "\n[1] View all products" +
-                    "\n[2] Make an order" +
-                    "\n[3] Search Customers" +
+                    "\n[2] Make an order (requires account)" +
+                    "\n[3] Search Customers by Name" +
                     "\n[4] View Order History by Store" +
-                    "\n[5] View Order History By Customer");
+                    "\n[5] View Order History By Customer" +
+                    "\n[6] Create a New Account" +
+                    "\n[7] Login to a Different Account" +
+                    "\n[8] Exit Application");
             string input = Console.ReadLine();
             if (input == "1")
             {
@@ -102,52 +96,122 @@ namespace P0Store
             {
                 CustomerOrderHistory();
             }
+            else if (input == "6")
+            {
+                CreateAccount();
+            }
+            else if (input == "7")
+            {
+                Login();
+            }
+            //exits application
+            else if (input == "8")
+            {
+                Console.WriteLine("Thank you for using Basic Books!");
+                Console.ReadKey();
+                Environment.Exit(0);
+            }
             else
             {
-                Console.WriteLine("Invalid input, please choose one of the following according to the displayed numbers:\n");
+                Console.WriteLine("Invalid input, please choose one of the displayed numbers.\n");
             }
+            //repeats option to call until customer chooses to exit
+            CallMethods(customerId);
         }
         //login to existing account********************************************************************************************************
         public static int Login()
         {
             using (var context = new Project0DbContext())
             {
-                var pwdCustId = -1;
+                var custId = -1;
                 //while the username and password are not found to match any pair in the database, repeat WHILE LOOP DIDN'T SEEM TO REALIZE THAT pwdCustId was changing, and kept looping despite pwdCustId > 0 message displaying
-                while (pwdCustId < 0)
+                while (custId < 0)
                 {
-                    Console.WriteLine("Username: ");
-                    string usernameInput = Console.ReadLine();
-                    //check to see if/where username input is in the database  -- gets single result
-                    var usernameMatch = context.Customers.Where(u => u.Username == usernameInput).Single().Username;
-                    Console.WriteLine("Password: ");
-                    string passwordInput = Console.ReadLine();
-                    //gets password in database
-                    var passwordMatch = context.Customers.First(p => p.Password == passwordInput).Password;
+                    bool matches;
+                    string usernameMatch = "";
+                    string passwordMatch = "";
+                    string validUsernameInput = "";
+                    //loop repeats until valid username match is found
+                    do
+                    {
+                        Console.WriteLine("Username: ");
+                        string usernameInput = Console.ReadLine();
+                        //uses premade method to validate username input
+                        validUsernameInput = ValidateString(usernameInput);
+                        //username exception handling
+                        try
+                        {
+                            //check to see if/where username input is in the database  -- gets single result
+                            usernameMatch = context.Customers.Where(u => u.Username == validUsernameInput).Single().Username;
+                            matches = true;
+                        }
+                        catch (InvalidOperationException)
+                        {
+                            Console.WriteLine("We could not find a match for that username, try again.");
+                            matches = false;
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e.Message);
+                            matches = false;
+                        }
+                    } while (matches == false);
+                    //loop repeats until valid pwd match is found
+                    do
+                    {
+                        Console.WriteLine("Password: ");
+                        string passwordInput = Console.ReadLine();
+                        //uses premade method to validate passoword input
+                        string validPasswordInput = ValidateString(passwordInput);
+                        //password exception handling
+                        try
+                        {
+                            //gets password in database to compare
+                            passwordMatch = context.Customers.First(p => p.Password == validPasswordInput).Password;
+                            matches = true;
+                        }
+                        catch(InvalidOperationException)
+                        {
+                            Console.WriteLine("We could not find a match for that password, try again.");
+                            matches = false;
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e.Message);
+                            matches = false;
+                        }
+                    } while (matches == false);
+
 
                     //get customer id for both username and password and confirm that they match
-                    pwdCustId = context.Customers.First(i => i.Password == passwordMatch && i.Username == usernameMatch).Id;
+                    custId = context.Customers.First(i => i.Password == passwordMatch && i.Username == usernameMatch).Id;
                     //confirm username matches with password
                     //if pwdCustId is found in database, the Id will be greater than 0, and SHOULD break out of while loop
-                    if (pwdCustId >= 0)
+                    if (custId >= 0)
                     {
-                        Console.WriteLine("Thank you, and welcome.");
+                        //get name for greeting
+                        string fnameGreet = context.Customers.Where(u => u.Username == validUsernameInput).Single().FirstName;
+                        Console.WriteLine($"Thank you, {fnameGreet}, and welcome.");
                     }
                     else
                     {
                         Console.WriteLine("That username and password does not match our records, please try again.");
                     }
                 }
-                return pwdCustId;
+                return custId;
             }
         }
         //create new acccount********************************************************************************************************
-        public static string CreateAccount()
+        public static int CreateAccount()
         {
             //call to database
             using (var context = new Project0DbContext())
             {
                 string usernameInput = "";
+                string validatedUsernameInput = "";
+                string validatedPasswordInput = "";
+                string validatedfnameInput = "";
+                string validatedlnameInput = "";
                 bool newUsername = false;
                 //while loop allows for repeated username attempts
                 while (newUsername == false)
@@ -155,10 +219,12 @@ namespace P0Store
                     //get username input
                     Console.WriteLine("Username: ");
                     usernameInput = Console.ReadLine();
+                    //input validation for create account username
+                    validatedUsernameInput = ValidateString(usernameInput);
                     //tries to find a match for username input already in the database
                     try
                     {
-                        var user = context.Customers.Where(u => u.Username == usernameInput).Single().Username;
+                        var user = context.Customers.Where(u => u.Username == validatedUsernameInput).Single().Username;
                         //if a user is found
                         if (user != null)
                         {
@@ -174,28 +240,76 @@ namespace P0Store
                         //breaks out of username while loop
                         newUsername = true;
                     }
+                    //any other issues with exceptions will be handled here, and send the while loop back up top
+                    catch(Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
                 }
-                //get input password
-                Console.WriteLine("Password: ");
-                string passwordInput = Console.ReadLine();
-                //need to get id to add number to so primary key doesn't default to 0
-                var idCount = context.Customers.Count()+1; // need to add 1 because c# index starts at 0, and sql index starts at 1
-                //puts input usr & pwd into new customer item
-                var customer = new Customers
+                bool fillsuccess;
+                //initializes new customer object before filling it within the do while loop
+                var customer = new Customers();
+                //do while loop to ensure repeated attempts at inputting information
+                do
                 {
-                    //adds 1 to total count of customers to get new primary key for new customer
-                    Id = idCount++,
-                    Username = usernameInput,
-                    Password = passwordInput
-                };
-                //add new username and password to a new customer in the database
-                context.Customers.Add(customer);
-                //saves changes to database
-                context.SaveChanges();
-                Console.WriteLine("Welcome, " + usernameInput + "! Your account has been created.");
+                    //get input password
+                    Console.WriteLine("Password: ");
+                    string passwordInput = Console.ReadLine();
+                    //input validation for create account password
+                    validatedPasswordInput = ValidateString(passwordInput);
+                    //get firstname input
+                    Console.WriteLine("First Name: ");
+                    string fnameInput = Console.ReadLine();
+                    //input validation for create account password
+                    validatedfnameInput = ValidateString(fnameInput);
+                    //get lastname input
+                    Console.WriteLine("Last Name: ");
+                    string lnameInput = Console.ReadLine();
+                    //input validation for create account password
+                    validatedlnameInput = ValidateString(lnameInput);
+                    try
+                    {
+                        //need to get id to add number to so primary key doesn't default to 0
+                        var idCount = context.Customers.Count() + 1; // need to add 1 because c# index starts at 0, and sql index starts at 1
+                        //puts input usr, pwd, fname, lname into new customer item
+                        customer = new Customers
+                        {
+                            Id = idCount,
+                            Username = validatedUsernameInput,
+                            Password = validatedPasswordInput,
+                            FirstName = validatedfnameInput,
+                            LastName = validatedlnameInput
+                        };
+                        //confirms passed without any exceptions
+                        fillsuccess = true;
+                    }
+                    catch(Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                        fillsuccess = false;
+                    }
+                    
+                } while (fillsuccess == false);
 
-                //returns username for greeting
-                return usernameInput;
+                //exception handling for adding customer to server
+                try
+                {
+                    //adds a new customer in the database
+                    context.Customers.Add(customer);
+                    //saves changes to database
+                    context.SaveChanges();
+                    Console.WriteLine("Welcome, " + validatedfnameInput + "! Your account has been created.");
+                }
+                catch(Exception e)
+                {
+                    Console.WriteLine("Error, Account Creation Failed: " + e.Message);
+                    Console.ReadKey();
+                }
+
+                //get generated customer id
+                int custId = customer.Id;
+                //returns name for greeting
+                return custId;
             }
         }
         //list all products********************************************************************************************************
@@ -216,24 +330,61 @@ namespace P0Store
         //make an order********************************************************************************************************
         public static void MakeOrder(int customerId)
         {
+            //making an order requires a login to ensure customer records
+            Login();
             using (var context = new Project0DbContext())
             {
-                //(ASK FOR STORE TO ORDER FROM FIRST -IF HAVE THE TIME-, THEN A/F ORDERING REDUCE THAT STORE'S STOCK OF ITEM(S)) *****
-                Console.WriteLine("Which store would you like to order from?");
-                //gets list of stores from database
-                var storeList = context.Stores;
-                //prints list of store names and prices to console as numbered options
-                foreach (var store in storeList)
+                bool storeexception;
+                int storeChoice = 1;
+                do
                 {
-                    //formatted to display price in currency format
-                    Console.WriteLine("[" + store.Id + "] " + store.Address);
-                }
-                //gets store of choice from user
-                int storeChoice = Convert.ToInt32(Console.ReadLine());
+                    try
+                    {
+                        Console.WriteLine("Which store would you like to order from?");
+                        //gets list of stores from database
+                        var storeList = context.Stores;
+                        //prints list of store names and prices to console as numbered options
+                        foreach (var store in storeList)
+                        {
+                            //formatted to display price in currency format
+                            Console.WriteLine("[" + store.Id + "] " + store.Address);
+                        }
+                        //gets store of choice from user
+                        storeChoice = Convert.ToInt32(Console.ReadLine());
+                        //input must keep within range of store list
+                        //gets count of stores from database
+                        var storeCount = context.Stores.Count();
+                        //if number input is greater than number of stores, or 0 or less: returns bad input and loops
+                        if (storeChoice > storeCount || storeChoice <= 0)
+                        {
+                            //throws custom exception to pull out of try before displaying writelines
+                            throw new System.ArgumentException("Parameter cannot be less than or greater than number of listed stores", "storeChoice");
+                        }
+                        //finishes try w/o any exceptions will break out of do while loop
+                        storeexception = false;
+                    }
+                    catch(Exception e)
+                    {
+                        Console.WriteLine(e.Message + " Please enter a valid number");
+                        storeexception = true;
+                    }
+                } while (storeexception == true);
                 //after choosing store, can then choose items to order
+
                 bool continueOrder;
+                //item for each order's cost
+                decimal thisOrderItemCost = 0;
+                //item to gather the total cost of an instance of orders
                 decimal orderCost = 0;
                 int orderSelect = 0;
+                int quantity = 0;
+                string displayOrder = "";
+                //adds to id when creating new order item, required b/c sql starts at 1 index, c# starts at 0
+                int numOrdersToAdd = 1;
+                //create list to put multiple order objects into
+                List<Orders> OrderList = new List<Orders>();
+                //create list with which to modify multiple inventory objects  UNABLE TO PUT INVENTORY ITEMS INTO LIST AND UPDATE
+                List<Inventory> InventoryList = new List<Inventory>();
                 do
                 {
                     Console.WriteLine("Select product to order: ");
@@ -242,27 +393,121 @@ namespace P0Store
                     //prints list of product names and prices to console as numbered options
                     foreach (var product in productList)
                     {
-                        //formatted to display price in currency format
+                        //shows product id, name, and formatted to display price in currency format
                         Console.WriteLine("[" + product.Id + "] " + product.Name + "  " + String.Format("{0:C}", product.Price));
                     }
                     //user selects item to add to order - try catch
                     try
                     {
+                        //user selects product id
                         orderSelect = Convert.ToInt32(Console.ReadLine());
-                        //get price of products according to input id with linq
+                        //get price of product according to input id with linq
                         Products productPrice = productList.First(p => p.Id == orderSelect)/*.Price*/;
                         decimal chosenProductPrice = productPrice.Price;
-                        //add price to variable for order summary display INSTEAD NOT using switch case
-                        orderCost += chosenProductPrice;
+
+                        //query quantity of item selected (do while ensures no orders greater than 10 in quantity)
+                        do
+                        {
+                            //exception handling for quantity of items selected
+                            try
+                            {
+                                Console.WriteLine("And how many of those would you like?");
+                                quantity = Convert.ToInt32(Console.ReadLine());
+                            }
+                            catch(Exception e)
+                            {
+                                Console.WriteLine(e.Message);
+                            }
+                            //prevents quantity greater than 10 or a negative quantity
+                            if (quantity > 10 || quantity < 0)
+                            {
+                                Console.WriteLine("May not buy more than 10 or less than 0.");
+                            }
+                        } while (quantity > 10 || quantity < 0);
+
+                        //get name of product according to input id with linq
+                        string productName = productList.First(p => p.Id == orderSelect).Name;
+                        //gets cost of just this order item
+                        thisOrderItemCost = chosenProductPrice * quantity;
+                        //adds this order item to a string for displaying the order
+                        displayOrder += productName + " - Quantity: " + quantity + " - Cost: " + String.Format("{0:C}", thisOrderItemCost) + "\n";
+                        //add price to variable to add to order item and keeps adding each loop for total
+                        orderCost += chosenProductPrice * quantity;
                     }
                     //throws exception with invalid input
-                    catch (Exception)
+                    catch (Exception e)
                     {
+                        Console.WriteLine(e.Message);
                         Console.WriteLine("Invalid input, please try ordering again.");
                     }
-                    //checks if user would like to add more items to the order
-                    Console.WriteLine("Would you like to continue ordering? (y/n)");
-                    string continueOrderInput = Console.ReadLine();
+
+                    //create new order item and adds to OrderList each loop
+                    OrderList.Add(new Orders
+                    {
+                        //need to add 2 to count because sql counts from 1 and c# counts from 0
+                        Id = context.Orders.Count() + numOrdersToAdd,
+                        ProductId = orderSelect,
+                        CustomerId = customerId,
+                        StoreId = storeChoice,
+                        Price = thisOrderItemCost,
+                        OrderTime = DateTime.Now,
+                        Quantity = quantity
+                    });
+                    //adds to count variable to ensure valid/unique new id
+                    numOrdersToAdd++;
+
+                    try
+                    {
+                        /************************             PLACE INVENTORY EVAL HERE ONCE FINISHED                 ******************************/
+                    }
+                    catch(Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
+                    //remove quantities of each item selected from given store
+                    //gets inventory / quantity of item that matches currently selected store and product 1 and subtracts quantity from it
+                    var inventoryQuantity = context.Inventory.First(s => s.StoreId == storeChoice && s.ProductId == orderSelect).Quantity - quantity;
+                    //    Console.WriteLine("THIS IS THE INVENTORY QUANTITY BEFORE: " + inventoryQuantity);
+                    //subtracts quantity selected from store inventory
+                    //    inventoryQuantity -= quantity;
+
+                    //    Console.WriteLine("THIS IS THE INVENTORY QUANTITY AFTER: " + inventoryQuantity + "\nTHIS IS THE QUANTITY: " + quantity);
+
+                    //commits update of new inventory
+                    /*               context.Inventory.Update(inventoryQuantity);****************************************************************************************/
+                    //MISSING UPDATE INVENTORY COMMIT BEFORE SUBMIT CHANGES
+
+                    /* UNABLE TO FIND UPDATE RANGE THE WEBSITE LIED TO ME
+                    //modifies existing inventory objects through InventoryList
+                    InventoryList.UpdateRange(new Inventory
+                    {
+                    });*/
+                    //remove quantities of each item selected from given store
+                    //gets inventory / quantity of item that matches currently selected store and product 1
+                    /*           var inventoryQuantity = context.Inventory.First(s => s.StoreId == storeChoice && s.ProductId == orderSelect).Quantity;
+                               Console.WriteLine("THIS IS THE INVENTORY QUANTITY BEFORE: " + inventoryQuantity);
+                               //subtracts quantity selected from store inventory
+                               inventoryQuantity -= quantity;
+                               Console.WriteLine("THIS IS THE INVENTORY QUANTITY AFTER: " + inventoryQuantity + "\nTHIS IS THE QUANTITY: " + quantity);        */
+                    // \/ This should be equivalent to updating / modifying database according to Nick's website \/
+                    /* NONE OF IT WORKS
+                    context.Inventory.Update(s => s.StoreId == storeChoice && s.ProductId == orderSelect).inventoryQuantity;
+                    context.Inventory.Update(s => s.StoreId == storeChoice && s.ProductId == orderSelect);
+                    context.Inventory.Update();
+                    */
+
+                    bool validatedContinueOrderInput;
+                    string continueOrderInput = "";
+                    //do while continues as long as input response to repeat further orders is invalid
+                    do
+                    {
+                        //checks if user would like to add more items to the order
+                        Console.WriteLine("Would you like to continue ordering (y)? Or submit your order (n)?");
+                        continueOrderInput = Console.ReadLine();
+                        validatedContinueOrderInput = ValidYN(continueOrderInput);
+                    }
+                    while (validatedContinueOrderInput == false);
+                    //decides whether to go through full order loop again, based on validated continueOrderInput
                     if (continueOrderInput == "y" || continueOrderInput == "Y")
                     {
                         continueOrder = true;
@@ -271,23 +516,48 @@ namespace P0Store
                     {
                         continueOrder = false;
                     }
-                    //breaks out of ordering loop when user is finished
+                    //breaks out of full ordering loop when user is finished
                 } while (continueOrder == true);
-                Console.WriteLine("The total cost of your order is " + String.Format("{0:C}", orderCost));
-                //create new order
-                var neworder = new Orders
+
+                // shows customer their cart
+                //console writeline string that appends the names of products and gets a quantity for each
+                Console.WriteLine("Your order:\n" + displayOrder);
+                //display the total cost of the order
+                Console.WriteLine("The total cost of your order is " + String.Format("{0:C}", orderCost) + "\n");
+
+
+                //add order item to commit for each item in orderlist
+                foreach(var order in OrderList)
                 {
-                    Id = context.Orders.Count() + 1,
-                    ProductId = orderSelect,
-                    CustomerId = customerId,
-                    StoreId = storeChoice,
-                    Price = orderCost,
-                    Time = DateTime.Now
-                };
-                //add order to customer
-                context.Orders.Add(neworder);
+                    context.Orders.AddRange(order);
+                }
                 //save changes to database
                 context.SaveChanges();
+
+                /*
+                //PUTTING SAVECHANGES IN A SEPARATE WHILE LOOP CAUSES CONSOLE TO HANG - SAVECHANGES GOES THROUGH, BUT DOES NOT RETURN TO METHOD (NO ERRORS, NO CRASH)
+                //order submission confirmation
+                Console.WriteLine("Submit order? (y/n)");
+                //input confirm / deny
+                string confirmOrder = Console.ReadLine();
+                //checks user to confirm, loop ensures proper input to validate user input
+                while (confirmOrder != "y" || confirmOrder != "Y" || confirmOrder != "n" || confirmOrder != "N")
+                {
+                    if (confirmOrder == "y" || confirmOrder == "Y")
+                    {
+                        //save changes to database
+                        context.SaveChanges();
+                    }
+                    //prompts double check with user
+                    else if (confirmOrder == "n" || confirmOrder == "N")
+                    {
+                        Console.WriteLine("Very well, the order will be discarded");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid input, please try again.");
+                    }
+                }*/
             }
         }
         //search customers by name********************************************************************************************************
@@ -295,26 +565,74 @@ namespace P0Store
         {
             using (var context = new Project0DbContext())
             {
-                //get search
-                Console.WriteLine("Enter a name to search for: ");
-                string custSearchInput = Console.ReadLine();
-                //check search against the database
-                try
+                bool repeat = true;
+                bool valid;
+                string tryagain = "";
+                //do while repeats if user misses but wants to keep searching
+                do
                 {
-                    var user = context.Customers.Where(u => u.Username == custSearchInput).Single().Username;
-                    //if a user is found
-                    if (user != null)
+                    //get search
+                    Console.WriteLine("Enter a (first) name to search for: ");
+                    string fnameSearchInput = Console.ReadLine();
+                    string validatedfnameSearchInput = ValidateString(fnameSearchInput);
+
+                    //check search against the database
+                    try
                     {
-                        //indicates that username is in the database
-                        Console.WriteLine("That username is present!");
+                        var userfname = context.Customers.Where(u => u.FirstName == validatedfnameSearchInput).Single().FirstName;
+                        var userlname = context.Customers.Where(u => u.FirstName == validatedfnameSearchInput).Single().LastName;
+                        var username = context.Customers.Where(u => u.FirstName == validatedfnameSearchInput).Single().Username;
+                        //if a user is found
+                        if (userfname != null)
+                        {
+                            //indicates that username is in the database
+                            Console.WriteLine($"That user is present in the database! {userfname} {userlname}'s username is {username}.");
+                            //do while handles input validation - ensures user input is either y/n
+                            do
+                            {
+                                //prompts user if they want to search again
+                                Console.WriteLine("Would you like to search for another user? (y/n)");
+                                tryagain = Console.ReadLine();
+                                valid = ValidYN(tryagain);
+                            } while (valid == false);
+                            //user chooses to try again or not logic
+                            if (tryagain == "y" || tryagain == "Y")
+                            {
+                                repeat = true;
+                            }
+                            else if (tryagain == "n" || tryagain == "N")
+                            {
+                                repeat = false;
+                            }
+                        }
                     }
-                }
-                //if input username is not found in the database, it will throw an InvalidOperationException because user will be null
-                catch (InvalidOperationException)
-                {
-                    //indicates username not found
-                    Console.WriteLine("There was no similar username found, try again?");
-                }
+                    //if input username is not found in the database, it will throw an InvalidOperationException because user will be null
+                    catch (InvalidOperationException)
+                    {
+                        //do while handles input validation - ensures user input is either y/n
+                        do
+                        {
+                            //indicates username not found
+                            Console.WriteLine("There was no similar username found, try again? (y/n)");
+                            tryagain = Console.ReadLine();
+                            valid = ValidYN(tryagain);
+                        } while (valid == false);
+                        //user chooses to try again or not logic
+                        if (tryagain == "y" || tryagain == "Y")
+                        {
+                            repeat = true;
+                        }
+                        else if (tryagain == "n" || tryagain == "N")
+                        {
+                            repeat = false;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                        repeat = true;
+                    }
+                } while (repeat == true);
             }
         }
         //order history by store********************************************************************************************************
@@ -322,50 +640,117 @@ namespace P0Store
         {
             using (var context = new Project0DbContext())
             {
-                Console.WriteLine("Select a store to search: ");
-                //gets list of stores from database
-                var storeList = context.Stores;
-                //prints list of stores to console
-                foreach (var store in storeList)
+                bool valid;
+                int storeChoice = 0;
+                //do while will repeat if user input or db call causes an exception
+                do
                 {
-                    Console.WriteLine("[" + store.Id + "]  " + store.Address);
-                }
-                //gets store of choice from user
-                int storeChoice = Convert.ToInt32(Console.ReadLine());
-                //selects db info according to input store
-                var storeOrderList = context.Orders.Where(s => s.StoreId == storeChoice);
-                //using foreach instead of switch case to display order details by store
-                foreach (var order in storeOrderList)
-                {
-                    Console.WriteLine("Customer ID-" + order.CustomerId + ", Product ID-" + order.ProductId + ", Price-" + order.Price);
-                }
+                    Console.WriteLine("Select a store to search: ");
+                    //gets store of choice from user with exception handling
+                    try
+                    {
+                        //gets list of stores from database
+                        var storeList = context.Stores;
+                        //prints list of stores to console
+                        foreach (var store in storeList)
+                        {
+                            Console.WriteLine("[" + store.Id + "]  " + store.Address);
+                        }
+                        storeChoice = Convert.ToInt32(Console.ReadLine());
+                        //selects db order info according to input store
+                        var storeOrderList = context.Orders.Where(s => s.StoreId == storeChoice);
+                        //input must keep within range of store list
+                        //gets count of stores from database
+                        var storeCount = context.Stores.Count();
+                        //if number input is greater than number of stores, or 0 or less: returns bad input and loops
+                        if (storeChoice > storeCount || storeChoice <= 0)
+                        {
+                            //throws custom exception to pull out of try before displaying writelines
+                            throw new System.ArgumentException("Parameter cannot be less than or greater than number of listed stores", "storeChoice");
+                        }
+                        Console.WriteLine("This store's order history: ");
+                        //using foreach instead of switch case to display order details by store
+                        foreach (var order in storeOrderList)
+                        {
+                            Console.WriteLine("Customer ID-" + order.CustomerId +
+                                                ", Product ID-" + order.ProductId +
+                                                ", Quantity bought-" + order.Quantity +
+                                                ", Price-" + order.Price +
+                                                ", Time=" + order.OrderTime);
+                        }
+                        //selects db inventory info according to input store
+                        var storeInventory = context.Inventory.Where(s => s.StoreId == storeChoice);
+                        //display inventory of selected store
+                        Console.WriteLine("\nThis store's current stock: ");
+                        foreach (var productInventory in storeInventory)
+                        {
+                            Console.WriteLine("Product ID: " + productInventory.ProductId + "  Current Stock: " + productInventory.Quantity);
+                        }
+                        Console.WriteLine();
+                        //going all the way through try w/o exception will break out of do while loop
+                        valid = true;
+                    }
+                    catch(Exception e)
+                    {
+                        Console.WriteLine(e.Message + "  Please enter a valid number.");
+                        //a caught exception will cause the do while loop to repeat
+                        valid = false;
+                    }
+                } while (valid == false);
             }
         }
-        //view order history of a customer********************************************************************************************************
+        //view order history of a customer*****************ADD NO ORDER HISTORY OPTION*****************AND CHOOSE BY NAME INSTEAD OF USERNAME*******************
         public static void CustomerOrderHistory()
         {
             using (var context = new Project0DbContext())
             {
-                Console.WriteLine("Select a customer to view their order history: ");
-                //gets list of customers from database
-                var customerList = context.Customers;
-                //prints list customers to console
-                foreach (var customer in customerList)
+                bool exeptionthrown;
+                //do while repeats if an exception is thrown
+                do
                 {
-                    Console.WriteLine("[" + customer.Id + "]  " + customer.Username);
+                    try
+                    {
+                        //prompt user for customer choice
+                        Console.WriteLine("Select a customer to view their order history: ");
+                        //gets list of customers from database
+                        var customerList = context.Customers;
+                        //prints list customers to console
+                        foreach (var customer in customerList)
+                        {
+                            Console.WriteLine("[" + customer.Id + "]  " + customer.Username);
+                        }
+                        //gets customer of choice from user
+                        int customerChoice = Convert.ToInt32(Console.ReadLine());
+                        //selects db info according to input customer
+                        var orderList = context.Orders.Where(s => s.CustomerId == customerChoice);
+                        //input must keep within range of store list
+                        //gets count of stores from database
+                        var customerCount = context.Customers.Count();
+                        //if number input is greater than number of customers, or 0 or less: returns bad input and loops
+                        if (customerChoice > customerCount || customerChoice <= 0)
+                        {
+                            //throws custom exception to pull out of try before displaying writelines
+                            throw new System.ArgumentException("Parameter cannot be less than or greater than number of listed customers", "customerChoice");
+                        }
+                        //using foreach instead of switch case to display order details by customer
+                        foreach (var order in orderList)
+                        {
+                            Console.WriteLine("Customer ID-" + order.CustomerId +
+                                                ", Product ID-" + order.ProductId +
+                                                ", Store ID-" + order.StoreId +
+                                                ", Price-" + order.Price +
+                                                ", Time-" + order.OrderTime);
+                        }
+                        //finishes try w/ no exceptions thrown, will finish loop
+                        exeptionthrown = false;
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message + "  Please input correct number.");
+                        exeptionthrown = true;
+                    }
                 }
-                //gets customer of choice from user
-                int customerChoice = Convert.ToInt32(Console.ReadLine());
-                //selects db info according to input customer
-                var orderList = context.Orders.Where(s => s.CustomerId == customerChoice);
-                //using foreach instead of switch case to display order details by customer
-                foreach (var order in orderList)
-                {
-                    Console.WriteLine("Customer ID-" + order.CustomerId + 
-                                        ", Product ID-" + order.ProductId + 
-                                        ", Store ID-" + order.StoreId +
-                                        ", Price-" + order.Price);
-                }
+                while (exeptionthrown == true);
             }
         }
         //setup database if empty********************************************************************************************************
@@ -380,23 +765,26 @@ namespace P0Store
                     var store1 = new Stores
                     {
                         Id = 1,
-                        Address = "123 First St, Dallas, TX",
+                        Address = "123 1st St, Dallas, TX",
                         //need to create inventory (made of multiple items) based on products ****************************
-                        Stock = 111
+                        //Store stock removed due to Inventory Quantity
+                        //Stock = 111
                     };
                     var store2 = new Stores
                     {
                         Id = 2,
                         Address = "223 2nd St, Dallas, TX",
                         //need to create inventory (made of multiple items) based on products ****************************
-                        Stock = 112
+                        //Store stock removed due to Inventory Quantity
+                        //Stock = 212
                     };
                     var store3 = new Stores
                     {
                         Id = 3,
-                        Address = "333 Third St, Dallas, TX",
+                        Address = "333 3rd St, Dallas, TX",
                         //need to create inventory (made of multiple items) based on products ****************************
-                        Stock = 113
+                        //Store stock removed due to Inventory Quantity
+                        //Stock = 313
                     };
                     // add created store
                     context.Stores.Add(store1);
@@ -412,19 +800,19 @@ namespace P0Store
                     {
                         Id = 1,
                         Name = "Book about Something",
-                        Price = 10
+                        Price = Convert.ToDecimal(11.95)
                     };
                     var product2 = new Products
                     {
                         Id = 2,
                         Name = "Book about Nothing",
-                        Price = 11
+                        Price = Convert.ToDecimal(22.95)
                     };
                     var product3 = new Products
                     {
                         Id = 3,
-                        Name = "Book about...",
-                        Price = 12
+                        Name = "Book about Everything",
+                        Price = Convert.ToDecimal(39.95)
                     };
                     // sets new products to be added
                     context.Products.Add(product1);
@@ -441,18 +829,16 @@ namespace P0Store
                         Id = 1,
                         Username = "username1",
                         Password = "password1",
-                        // should probably dump address and state, or create separate table for addresses, check against project0 req
-                        Address = "123 Main St",
-                        City = "Dallas"
+                        FirstName = "Amy",
+                        LastName = "Arrigeti"
                     };
                     var customer2 = new Customers
                     {
                         Id = 2,
                         Username = "username2",
                         Password = "password2",
-                        // should probably dump address and state, or create separate table for addresses, check against project0 req
-                        Address = "223 Main St",
-                        City = "Dallas"
+                        FirstName = "Bob",
+                        LastName = "Builder"
                     };
                     // this doesn't modify the database YET.
                     context.Customers.Add(customer1);
@@ -469,8 +855,9 @@ namespace P0Store
                         ProductId = 2,
                         CustomerId = 1,
                         StoreId = 1,
-                        Price = 11,
-                        Time = DateTime.Now
+                        Price = 12,
+                        OrderTime = DateTime.Now,
+                        Quantity = 1
                     };
                     var order2 = new Orders
                     {
@@ -479,7 +866,8 @@ namespace P0Store
                         CustomerId = 2,
                         StoreId = 3,
                         Price = 12,
-                        Time = DateTime.Now
+                        OrderTime = DateTime.Now,
+                        Quantity = 1
                     };
                     var order3 = new Orders
                     {
@@ -487,8 +875,9 @@ namespace P0Store
                         ProductId = 1,
                         CustomerId = 2,
                         StoreId = 2,
-                        Price = 10,
-                        Time = DateTime.Now
+                        Price = 64,
+                        OrderTime = DateTime.Now,
+                        Quantity = 3
                     };
                     // this doesn't modify the database YET.
                     context.Orders.Add(order1);
@@ -497,14 +886,129 @@ namespace P0Store
                     // to apply the changes that you've "prepped" on this context instance:
                     context.SaveChanges();
                 }
-                /*
-                // regardless, modify Fred's name
-                // first, load fred from the database (First is a LINQ method)
-                var fred = context.Persons.First(p => p.Name.StartsWith("Fred"));
-                Console.WriteLine(fred.Name);
-                fred.Name += "+";
-                context.SaveChanges();*/
+                // if there are no persons, then add the initial data.
+                if (!context.Inventory.Any())
+                {
+                    var inventory1 = new Inventory
+                    {
+                        Id = 1,
+                        ProductId = 1,
+                        StoreId = 1,
+                        Quantity = 111
+                    };
+                    var inventory2 = new Inventory
+                    {
+                        Id = 2,
+                        ProductId = 2,
+                        StoreId = 1,
+                        Quantity = 224
+                    };
+                    var inventory3 = new Inventory
+                    {
+                        Id = 3,
+                        ProductId = 3,
+                        StoreId = 1,
+                        Quantity = 336
+                    };
+                    var inventory4 = new Inventory
+                    {
+                        Id = 4,
+                        ProductId = 1,
+                        StoreId = 2,
+                        Quantity = 112
+                    };
+                    var inventory5 = new Inventory
+                    {
+                        Id = 5,
+                        ProductId = 2,
+                        StoreId = 2,
+                        Quantity = 224
+                    };
+                    var inventory6 = new Inventory
+                    {
+                        Id = 6,
+                        ProductId = 3,
+                        StoreId = 2,
+                        Quantity = 336
+                    };
+                    var inventory7 = new Inventory
+                    {
+                        Id = 7,
+                        ProductId = 1,
+                        StoreId = 3,
+                        Quantity = 113
+                    };
+                    var inventory8 = new Inventory
+                    {
+                        Id = 8,
+                        ProductId = 2,
+                        StoreId = 3,
+                        Quantity = 224
+                    };
+                    var inventory9 = new Inventory
+                    {
+                        Id = 9,
+                        ProductId = 3,
+                        StoreId = 3,
+                        Quantity = 336
+                    };
+                    // this doesn't modify the database YET.
+                    context.Inventory.Add(inventory1);
+                    context.Inventory.Add(inventory2);
+                    context.Inventory.Add(inventory3);
+                    context.Inventory.Add(inventory4);
+                    context.Inventory.Add(inventory5);
+                    context.Inventory.Add(inventory6);
+                    context.Inventory.Add(inventory7);
+                    context.Inventory.Add(inventory8);
+                    context.Inventory.Add(inventory9);
+                    // to apply the changes that you've "prepped" on this context instance:
+                    context.SaveChanges();
+                }
             }
+        }
+        //method to validate yes/no inputs (returns false if invalid)************************************************************************************
+        public static bool ValidYN(string input)
+        {
+            if(input == "y" || input == "Y")
+            {
+                return true;
+            }
+            else if(input == "n" || input == "N")
+            {
+                return true;
+            }
+            else
+            {
+                Console.WriteLine("Invalid input. Please return (y/n).");
+                return false;
+            }
+        }
+        //method to validate strings (returns false if invalid)******************************************************************
+        public static string ValidateString(string input)
+        {
+            string validatedString;
+            //ensures input string is not blank, null, or more than 35 characters
+            if (input == "" || input.Length > 35 || input == null)
+            {
+                Console.WriteLine("Input must not be blank or longer than 35 characters.");
+                Console.WriteLine("Please enter a valid input: ");
+                input = Console.ReadLine();
+            }
+
+            /*//ensures name does not include numbers
+            foreach (char item in input)
+            {
+                if (char.IsDigit(item))
+                {
+                    Console.Write("Digits Are NotAllowed....\n");
+                    Console.Write("Please Enter Correct Name: ");
+                    input = Console.ReadLine();
+                }
+            }*/
+
+            validatedString = input;
+            return validatedString;
         }
     }
 }

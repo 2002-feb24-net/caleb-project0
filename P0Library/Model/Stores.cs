@@ -7,13 +7,14 @@ namespace P0Library.Model
     {
         public Stores()
         {
+            Inventory = new HashSet<Inventory>();
             Orders = new HashSet<Orders>();
         }
 
         public int Id { get; set; }
         public string Address { get; set; }
-        public int? Stock { get; set; }
 
+        public virtual ICollection<Inventory> Inventory { get; set; }
         public virtual ICollection<Orders> Orders { get; set; }
     }
 }

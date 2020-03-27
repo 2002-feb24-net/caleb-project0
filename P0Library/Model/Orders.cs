@@ -10,7 +10,8 @@ namespace P0Library.Model
         public int? CustomerId { get; set; }
         public int? StoreId { get; set; }
         public decimal? Price { get; set; }
-        public DateTime? Time { get; set; }
+        public DateTime? OrderTime { get; set; }
+        public int? Quantity { get; set; }
 
         public virtual Customers Customer { get; set; }
         public virtual Products Product { get; set; }

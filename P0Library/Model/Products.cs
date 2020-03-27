@@ -7,6 +7,7 @@ namespace P0Library.Model
     {
         public Products()
         {
+            Inventory = new HashSet<Inventory>();
             Orders = new HashSet<Orders>();
         }
 
@@ -14,6 +15,7 @@ namespace P0Library.Model
         public string Name { get; set; }
         public decimal Price { get; set; }
 
+        public virtual ICollection<Inventory> Inventory { get; set; }
         public virtual ICollection<Orders> Orders { get; set; }
     }
 }
