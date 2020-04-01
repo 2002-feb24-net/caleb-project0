@@ -9,7 +9,7 @@ namespace P0Store
     class StorePage
     {
         //MAIN CONFLICTS, moved relevant methods and info to Program.cs
-        
+        // Deleted main from here
         //list all products
         public static void ListProducts()
         {
