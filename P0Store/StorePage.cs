@@ -9,54 +9,7 @@ namespace P0Store
     class StorePage
     {
         //MAIN CONFLICTS, moved relevant methods and info to Program.cs
-        static void Main(string[] args)
-        {
-            bool validinput = false;
-            //while loop to repeat so long as input does not match correct options
-            while(validinput == false)
-            {
-                Console.WriteLine("Would you like to: " +
-                    "\n[1] View all products" +
-                    "\n[2] Make an order" +
-                    "\n[3] Search Customers" +
-                    "\n[4] View Order History by Store" +
-                    "\n[5] View Order History By Customer");
-                string input = Console.ReadLine();
-                if (input == "1")
-                {
-                    ListProducts();
-                    validinput = true;
-                }
-                else if (input == "2")
-                {
-                    MakeOrder();
-                    validinput = true;
-                }
-                else if (input == "3")
-                {
-                    SearchCustomers();
-                    validinput = true;
-                }
-                else if (input == "4")
-                {
-                    StoreOrderHistory();
-                    validinput = true;
-                }
-                else if (input == "5")
-                {
-                    CustomerOrderHistory();
-                    validinput = true;
-                }
-                else
-                {
-                    Console.WriteLine("Invalid input, please choose one of the following according to the displayed numbers:\n");
-                    validinput = false;
-                }
-            }
-            Console.WriteLine("Thank you for shopping!");
-            Console.ReadKey();
-            Environment.Exit(0);
-        }
+        
         //list all products
         public static void ListProducts()
         {

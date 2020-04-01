@@ -10,14 +10,11 @@
         "projectUniqueName": "C:\\revature\\caleb-project0\\P0Library\\P0Library.csproj",
         "projectName": "P0Library",
         "projectPath": "C:\\revature\\caleb-project0\\P0Library\\P0Library.csproj",
-        "packagesPath": "C:\\Users\\cjcro\\.nuget\\packages\\",
+        "packagesPath": "C:\\Users\\harol\\.nuget\\packages\\",
         "outputPath": "C:\\revature\\caleb-project0\\P0Library\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-        ],
         "configFilePaths": [
-          "C:\\Users\\cjcro\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\harol\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -71,7 +68,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.200\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.102\\RuntimeIdentifierGraph.json"
         }
       }
     }

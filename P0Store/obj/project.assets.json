@@ -5021,8 +5021,7 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\cjcro\\.nuget\\packages\\": {},
-    "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
+    "C:\\Users\\harol\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
@@ -5030,14 +5029,11 @@
       "projectUniqueName": "C:\\revature\\caleb-project0\\P0Store\\P0Store.csproj",
       "projectName": "P0Store",
       "projectPath": "C:\\revature\\caleb-project0\\P0Store\\P0Store.csproj",
-      "packagesPath": "C:\\Users\\cjcro\\.nuget\\packages\\",
+      "packagesPath": "C:\\Users\\harol\\.nuget\\packages\\",
       "outputPath": "C:\\revature\\caleb-project0\\P0Store\\obj\\",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-      ],
       "configFilePaths": [
-        "C:\\Users\\cjcro\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\harol\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -5102,7 +5098,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.200\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.102\\RuntimeIdentifierGraph.json"
       }
     }
   }
