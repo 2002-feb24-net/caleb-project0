@@ -128,21 +128,5 @@ namespace P0Store
 
             }
         }
-        //order history by store
-        public static void StoreOrderHistory()
-        {
-            using (var context = new Project0DbContext())
-            {
-
-            }
-        }
-        //order history by customer
-        public static void CustomerOrderHistory()
-        {
-            using (var context = new Project0DbContext())
-            {
-
-            }
-        }
     }
 }
